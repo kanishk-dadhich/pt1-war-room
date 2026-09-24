@@ -73,6 +73,22 @@
   .tbtn{background:var(--panel);border:1px solid var(--border);color:var(--dim);border-radius:8px;
     width:36px;height:35px;cursor:pointer;font-size:15px;flex:none;display:grid;place-items:center;}
   .tbtn:hover{color:var(--text);border-color:var(--accent);}
+  .tip{flex:none;display:inline-flex;align-items:center;gap:5px;text-decoration:none;
+    background:var(--accent);color:#06231f;font-weight:700;font-size:12.5px;font-family:var(--f-mono);
+    border-radius:8px;padding:8px 12px;border:1px solid transparent;white-space:nowrap;}
+  .tip:hover{filter:brightness(1.08);}
+  .tip:focus-visible{outline:2px solid var(--text);outline-offset:2px;}
+  .support{margin-top:16px;display:flex;align-items:center;gap:10px 14px;flex-wrap:wrap;
+    background:linear-gradient(180deg,color-mix(in srgb,var(--accent) 13%,var(--panel)),var(--panel));
+    border:1px solid color-mix(in srgb,var(--accent) 38%,var(--border));border-radius:var(--r);
+    padding:12px 16px;box-shadow:var(--shadow);}
+  .support .txt{flex:1 1 240px;font-size:13px;color:var(--dim);}
+  .support .txt b{color:var(--text);}
+  .support .btn{flex:none;background:var(--accent);color:#06231f;font-weight:700;font-family:var(--f-mono);
+    font-size:12.5px;text-decoration:none;border-radius:8px;padding:9px 14px;white-space:nowrap;}
+  .support .btn:hover{filter:brightness(1.08);}
+  .support .handle{font-family:var(--f-mono);font-size:11.5px;color:var(--accent);
+    -webkit-user-select:all;user-select:all;word-break:break-all;}
 
   /* Phase nav */
   nav.phases{display:flex;gap:7px;flex-wrap:wrap;padding:12px 0 4px;}
@@ -170,6 +186,7 @@
       <input id="q" type="search" placeholder="Search commands, flags, ports…" autocomplete="off" spellcheck="false" aria-label="Search the cheat sheet">
       <kbd>/</kbd><button class="clr" id="clr" aria-label="Clear search">×</button>
     </div>
+    <a class="tip" href="https://razorpay.me/@kanishkdadhich" target="_blank" rel="noopener" title="Tip the author via Razorpay">☕ Tip</a>
     <button class="tbtn" id="theme" aria-label="Toggle theme" title="Toggle light / dark">◐</button>
   </div>
 </header>
@@ -178,6 +195,11 @@
 
   <section class="hero">
     <p class="lead"><b>Jr Penetration Tester → PT1</b> field reference. Everything is a live host in a <b>practical, notes-allowed</b> exam — enumerate hard, don't rabbit-hole, and copy what you need. Hit <code class="inl">/</code> to search, tap any <b>⧉</b> to copy. <b>Replace <code class="inl">TARGET</code> / <code class="inl">LHOST</code> / <code class="inl">USER</code> as you go.</b></p>
+    <div class="support">
+      <span class="txt">💛 <b>Free &amp; open.</b> If the War Room helps you land the shell (or pass PT1), you can tip the author:</span>
+      <a class="btn" href="https://razorpay.me/@kanishkdadhich" target="_blank" rel="noopener">Tip via Razorpay ↗</a>
+      <span class="handle">razorpay.me/@kanishkdadhich</span>
+    </div>
     <nav class="phases" id="pnav">
       <a href="#strat" style="--pc:var(--accent)"><b>▸</b> Strategy</a>
       <a href="#recon" style="--pc:var(--recon)"><b>▸</b> Recon</a>
@@ -913,8 +935,8 @@ nxc smb HOST -u USER -H NTLM                     <span class="cm"># spray hash</
   </section>
 
   <footer>
-    PT1 War Room · Jr Penetration Tester field reference · authorised testing only ·
-    full module notes live in your <a href="https://app.notion.com/p/3e43f4cbee3d81948a31e38814d15770" target="_blank" rel="noopener">Notion workspace</a>
+    PT1 War Room · Jr Penetration Tester field reference · authorised testing only<br>
+    made by <b>kanishk-dadhich</b> · support: <a href="https://razorpay.me/@kanishkdadhich" target="_blank" rel="noopener">razorpay.me/@kanishkdadhich</a>
   </footer>
 
 </div>
