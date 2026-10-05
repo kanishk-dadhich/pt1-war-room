@@ -173,48 +173,144 @@
   .hidden{display:none!important;}
   @media (max-width:520px){ .brand h1{font-size:13px;} .search kbd{display:none;} }
   @media (prefers-reduced-motion:reduce){*{transition:none!important;}}
+
+  /* ===================== DOCS LAYOUT (sidebar + content) ===================== */
+  :root{ --sb-w:288px; --content-max:980px; --topbar-h:52px; }
+  html{scroll-behavior:smooth;}
+  body{overflow-x:hidden;}
+
+  /* --- sidebar --- */
+  .sidebar{position:fixed;top:0;left:0;height:100dvh;width:var(--sb-w);z-index:60;
+    display:flex;flex-direction:column;background:var(--panel);border-right:1px solid var(--border);}
+  .sb-head{display:flex;align-items:center;gap:10px;padding:16px 16px 12px;}
+  .sb-head .dot{width:11px;height:11px;border-radius:50%;background:var(--accent);
+    box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 22%,transparent);flex:none;}
+  .sb-head h1{font-family:var(--f-mono);font-size:15px;font-weight:600;margin:0;letter-spacing:.02em;white-space:nowrap;}
+  .sb-head h1 span{color:var(--faint);font-weight:500;}
+  .sb-x{display:none;margin-left:auto;background:none;border:none;color:var(--dim);font-size:22px;line-height:1;cursor:pointer;}
+
+  .sb-search{position:relative;padding:0 14px 12px;}
+  .sb-search input{width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);
+    border-radius:8px;padding:8px 30px 8px 32px;font-family:var(--f-mono);font-size:12.5px;outline:none;}
+  .sb-search input:focus{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 22%,transparent);}
+  .sb-search svg{position:absolute;left:23px;top:16px;width:15px;height:15px;stroke:var(--faint);fill:none;}
+  .sb-search kbd{position:absolute;right:22px;top:9px;font-family:var(--f-mono);font-size:10px;color:var(--faint);
+    border:1px solid var(--border);border-radius:4px;padding:1px 5px;}
+  .sb-search .clr{position:absolute;right:20px;top:7px;display:none;background:none;border:none;color:var(--dim);
+    cursor:pointer;font-size:15px;line-height:1;padding:2px 6px;}
+
+  .sb-nav{flex:1;overflow-y:auto;padding:4px 10px 18px;-webkit-overflow-scrolling:touch;}
+  .sb-nav .grp{font-family:var(--f-mono);font-size:10px;text-transform:uppercase;letter-spacing:.09em;
+    color:var(--faint);padding:14px 10px 5px;}
+  .sb-nav .grp:first-child{padding-top:4px;}
+  .sb-nav a{display:flex;align-items:center;gap:9px;padding:7px 10px;border-radius:7px;text-decoration:none;
+    color:var(--dim);font-size:13px;line-height:1.25;border-left:2px solid transparent;}
+  .sb-nav a:hover{background:var(--elev);color:var(--text);}
+  .sb-nav a.active{background:color-mix(in srgb,var(--pc,var(--accent)) 15%,transparent);
+    color:var(--text);font-weight:600;border-left-color:var(--pc,var(--accent));}
+  .sb-nav a .n{font-family:var(--f-mono);font-size:10px;color:var(--faint);min-width:16px;}
+  .sb-nav a.active .n{color:var(--pc,var(--accent));}
+  .sb-nav a .pd{width:7px;height:7px;border-radius:50%;background:var(--pc,var(--accent));flex:none;opacity:.85;}
+
+  .sb-foot{border-top:1px solid var(--border);padding:11px 14px;display:flex;align-items:center;gap:10px;}
+  .sb-foot .tip{flex:1;justify-content:center;}
+
+  /* --- content --- */
+  .content{margin-left:var(--sb-w);min-width:0;}
+  .doc{max-width:var(--content-max);margin:0 auto;padding:26px 30px 90px;}
+  .page-title{font-size:23px;font-weight:700;letter-spacing:-.02em;margin:0 0 10px;}
+
+  .topbar{display:none;}
+  .burger{display:inline-flex;flex-direction:column;justify-content:center;gap:4px;width:36px;height:34px;
+    padding:0 8px;background:var(--panel);border:1px solid var(--border);border-radius:8px;cursor:pointer;}
+  .burger span{height:2px;background:var(--text);border-radius:2px;}
+  .tb-title{font-family:var(--f-mono);font-size:14px;}
+  .tb-title b{color:var(--accent);}
+
+  .sb-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:55;}
+
+  /* --- doc-ify the existing blocks (flatter, less "card wall") --- */
+  .doc .section{margin-top:34px;scroll-margin-top:68px;}
+  .doc .shead{border-bottom:1px solid var(--border);padding-bottom:9px;margin-bottom:14px;}
+  .doc .shead h2{font-size:18px;}
+  .doc .card,.doc .tblwrap{box-shadow:none;}
+  .doc .card{border-left-width:2px;}
+  .doc .grid{gap:12px;}
+
+  /* --- responsive: sidebar becomes a drawer --- */
+  @media (max-width:980px){
+    .sidebar{transform:translateX(-100%);transition:transform .22s ease;box-shadow:var(--shadow);width:min(86vw,320px);}
+    body.nav-open .sidebar{transform:none;}
+    body.nav-open .sb-overlay{display:block;}
+    .sb-x{display:block;}
+    .content{margin-left:0;}
+    .topbar{display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:50;height:var(--topbar-h);
+      padding:0 14px;background:color-mix(in srgb,var(--bg) 88%,transparent);
+      backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--border);}
+    .doc{padding:18px 16px 72px;}
+    .page-title{font-size:20px;}
+  }
 </style>
 
 <style>img{max-width:100%}:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}</style>
 </head>
 <body>
-<header class="top">
-  <div class="top-in">
-    <div class="brand"><span class="dot"></span><h1>PT1&nbsp;<span>// war room</span></h1></div>
-    <div class="search">
+<div class="layout">
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sb-head">
+      <span class="dot"></span>
+      <h1>PT1&nbsp;<span>// war room</span></h1>
+      <button class="sb-x" id="navClose" aria-label="Close menu">×</button>
+    </div>
+    <div class="sb-search">
       <svg viewBox="0 0 24 24" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-      <input id="q" type="search" placeholder="Search commands, flags, ports…" autocomplete="off" spellcheck="false" aria-label="Search the cheat sheet">
+      <input id="q" type="search" placeholder="Search…" autocomplete="off" spellcheck="false" aria-label="Search the cheat sheet">
       <kbd>/</kbd><button class="clr" id="clr" aria-label="Clear search">×</button>
     </div>
-    <a class="tip" href="https://razorpay.me/@kanishkdadhich" target="_blank" rel="noopener" title="Tip the author via Razorpay">☕ Tip</a>
-    <button class="tbtn" id="theme" aria-label="Toggle theme" title="Toggle light / dark">◐</button>
-  </div>
-</header>
+    <nav class="sb-nav" id="pnav">
+      <div class="grp">Get in</div>
+      <a href="#strat" style="--pc:var(--accent)"><span class="n">00</span><span class="pd"></span>Exam Strategy</a>
+      <a href="#recon" style="--pc:var(--recon)"><span class="n">01</span><span class="pd"></span>Recon &amp; Enum</a>
+      <a href="#web" style="--pc:var(--web)"><span class="n">02</span><span class="pd"></span>Web Exploitation</a>
+      <a href="#burp" style="--pc:var(--web)"><span class="n">03</span><span class="pd"></span>Burp Suite</a>
+      <a href="#pass" style="--pc:var(--pass)"><span class="n">04</span><span class="pd"></span>Password Attacks</a>
+      <div class="grp">Execute</div>
+      <a href="#shells" style="--pc:var(--access)"><span class="n">05</span><span class="pd"></span>Shells &amp; Listeners</a>
+      <a href="#msf" style="--pc:var(--access)"><span class="n">06</span><span class="pd"></span>Metasploit</a>
+      <div class="grp">Escalate</div>
+      <a href="#lpe" style="--pc:var(--privesc)"><span class="n">07</span><span class="pd"></span>Linux PrivEsc</a>
+      <a href="#wpe" style="--pc:var(--privesc)"><span class="n">08</span><span class="pd"></span>Windows PrivEsc</a>
+      <div class="grp">Move laterally</div>
+      <a href="#pivot" style="--pc:var(--recon)"><span class="n">09</span><span class="pd"></span>Pivoting &amp; Tunneling</a>
+      <a href="#ad" style="--pc:var(--ad)"><span class="n">10</span><span class="pd"></span>Active Directory</a>
+      <div class="grp">Reference</div>
+      <a href="#ref" style="--pc:var(--report)"><span class="n">11</span><span class="pd"></span>Tables</a>
+      <a href="#report" style="--pc:var(--report)"><span class="n">12</span><span class="pd"></span>Methodology</a>
+    </nav>
+    <div class="sb-foot">
+      <a class="tip" href="https://razorpay.me/@kanishkdadhich" target="_blank" rel="noopener" title="Tip the author via Razorpay">☕ Tip author</a>
+      <button class="tbtn" id="theme" aria-label="Toggle theme" title="Toggle light / dark">◐</button>
+    </div>
+  </aside>
 
-<div class="wrap">
+  <div class="sb-overlay" id="ov"></div>
+
+  <main class="content">
+    <div class="topbar">
+      <button class="burger" id="navOpen" aria-label="Open menu"><span></span><span></span><span></span></button>
+      <span class="tb-title">PT1 <b>War Room</b></span>
+    </div>
+    <div class="doc">
 
   <section class="hero">
+    <h2 class="page-title">PT1 War Room</h2>
     <p class="lead"><b>Jr Penetration Tester → PT1</b> field reference. Everything is a live host in a <b>practical, notes-allowed</b> exam — enumerate hard, don't rabbit-hole, and copy what you need. Hit <code class="inl">/</code> to search, tap any <b>⧉</b> to copy. <b>Replace <code class="inl">TARGET</code> / <code class="inl">LHOST</code> / <code class="inl">USER</code> as you go.</b></p>
     <div class="support">
       <span class="txt">💛 <b>Free &amp; open.</b> If the War Room helps you land the shell (or pass PT1), you can tip the author:</span>
       <a class="btn" href="https://razorpay.me/@kanishkdadhich" target="_blank" rel="noopener">Tip via Razorpay ↗</a>
       <span class="handle">razorpay.me/@kanishkdadhich</span>
     </div>
-    <nav class="phases" id="pnav">
-      <a href="#strat" style="--pc:var(--accent)"><b>▸</b> Strategy</a>
-      <a href="#recon" style="--pc:var(--recon)"><b>▸</b> Recon</a>
-      <a href="#web" style="--pc:var(--web)"><b>▸</b> Web</a>
-      <a href="#burp" style="--pc:var(--web)"><b>▸</b> Burp</a>
-      <a href="#pass" style="--pc:var(--pass)"><b>▸</b> Passwords</a>
-      <a href="#shells" style="--pc:var(--access)"><b>▸</b> Shells</a>
-      <a href="#msf" style="--pc:var(--access)"><b>▸</b> Metasploit</a>
-      <a href="#lpe" style="--pc:var(--privesc)"><b>▸</b> Linux PrivEsc</a>
-      <a href="#wpe" style="--pc:var(--privesc)"><b>▸</b> Windows PrivEsc</a>
-      <a href="#pivot" style="--pc:var(--recon)"><b>▸</b> Pivoting</a>
-      <a href="#ad" style="--pc:var(--ad)"><b>▸</b> Active Directory</a>
-      <a href="#ref" style="--pc:var(--report)"><b>▸</b> Tables</a>
-      <a href="#report" style="--pc:var(--report)"><b>▸</b> Report</a>
-    </nav>
   </section>
 
   <p class="noresult" id="noresult">no matches — try a shorter term</p>
@@ -1000,7 +1096,9 @@ nxc smb HOST -u USER -H NTLM                     <span class="cm"># spray hash</
     made by <b>kanishk-dadhich</b> · support: <a href="https://razorpay.me/@kanishkdadhich" target="_blank" rel="noopener">razorpay.me/@kanishkdadhich</a>
   </footer>
 
-</div>
+    </div><!-- /.doc -->
+  </main>
+</div><!-- /.layout -->
 
 <script>
 (function(){
@@ -1072,6 +1170,36 @@ nxc smb HOST -u USER -H NTLM                     <span class="cm"># spray hash</
     if(e.key==='/'&&document.activeElement!==q){e.preventDefault();q.focus();}
     if(e.key==='Escape'&&document.activeElement===q){q.value='';run('');q.blur();}
   });
+
+  // ---- sidebar drawer (mobile) ----
+  var body=document.body;
+  function openNav(){body.classList.add('nav-open');}
+  function closeNav(){body.classList.remove('nav-open');}
+  var navOpen=document.getElementById('navOpen'),
+      navClose=document.getElementById('navClose'),
+      ov=document.getElementById('ov');
+  if(navOpen)navOpen.addEventListener('click',openNav);
+  if(navClose)navClose.addEventListener('click',closeNav);
+  if(ov)ov.addEventListener('click',closeNav);
+  document.addEventListener('keydown',function(e){if(e.key==='Escape')closeNav();});
+
+  // ---- sidebar scroll-spy + close drawer on nav click ----
+  var pnav=document.getElementById('pnav'), navLinks={};
+  pnav.querySelectorAll('a').forEach(function(a){
+    navLinks[a.getAttribute('href').slice(1)]=a;
+    a.addEventListener('click',function(){ if(window.matchMedia('(max-width:980px)').matches) closeNav(); });
+  });
+  function setActive(id){
+    var link=navLinks[id]; if(!link||link.classList.contains('active'))return;
+    for(var k in navLinks) navLinks[k].classList.remove('active');
+    link.classList.add('active');
+  }
+  if('IntersectionObserver' in window){
+    var spy=new IntersectionObserver(function(entries){
+      entries.forEach(function(en){ if(en.isIntersecting) setActive(en.target.id); });
+    },{rootMargin:'-12% 0px -78% 0px',threshold:0});
+    sections.forEach(function(s){ if(s.id) spy.observe(s); });
+  }
 })();
 </script>
 </body>
